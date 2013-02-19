@@ -1,10 +1,14 @@
 package huge
 
 import (
+	"log"
 	"time"
 
 	"./entity"
 	"./system"
+
+	"github.com/go-gl/gl"
+	"github.com/go-gl/glfw"
 )
 
 type Game struct {
@@ -29,8 +33,27 @@ func NewGame() *Game {
 func (g *Game) Run() {
 	defer g.terminate()
 
+	var err error
+	if err = glfw.Init(); err != nil {
+		log.Fatalf("%v\n", err)
+		return
+	}
+
+	defer glfw.Terminate()
+
+	if err = glfw.OpenWindow(640, 480, 8, 8, 8, 8, 0, 0, glfw.Windowed); err != nil {
+		log.Fatalf("%v\n", err)
+		return
+	}
+
+	defer glfw.CloseWindow()
+
+	glfw.SetWindowTitle("Draw")
+	glfw.SetSwapInterval(1)
+	glfw.SetWindowSizeCallback(onResize)
+
 	g.running = true
-	for !g.quitting {
+	for !g.quitting && glfw.WindowParam(glfw.Opened) == 1 {
 		select {
 		case t := <-g.ticker[system.Slow].C:
 			if !g.oldTime[system.Slow].IsZero() {
@@ -43,6 +66,7 @@ func (g *Game) Run() {
 			}
 			g.oldTime[system.Normal] = t
 			g.Systems.Draw(g.Entities)
+			glfw.SwapBuffers()
 		case t := <-g.ticker[system.Fast].C:
 			if !g.oldTime[system.Fast].IsZero() {
 				g.Systems.Update(system.Fast, t.Sub(g.oldTime[system.Fast]), g.Entities)
@@ -50,6 +74,20 @@ func (g *Game) Run() {
 			g.oldTime[system.Fast] = t
 		}
 	}
+}
+
+func onResize(w, h int) {
+	// Write to both buffers, prevent flickering
+	gl.DrawBuffer(gl.FRONT_AND_BACK)
+
+	gl.MatrixMode(gl.PROJECTION)
+	gl.LoadIdentity()
+	gl.Viewport(0, 0, w, h)
+	gl.Ortho(0, float64(w), float64(h), 0, -1.0, 1.0)
+	gl.ClearColor(1, 1, 1, 0)
+	gl.Clear(gl.COLOR_BUFFER_BIT)
+	gl.MatrixMode(gl.MODELVIEW)
+	gl.LoadIdentity()
 }
 
 func (g *Game) terminate() {
