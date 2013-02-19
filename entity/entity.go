@@ -1,6 +1,14 @@
 package entity
 
 type Entity struct {
-	id int
-	//components map[string]Component
+	id         int
+	Components map[string]interface{}
+}
+
+func (e *Entity) Id() int {
+	return e.id
+}
+
+type Position struct {
+	X, Y int
 }
