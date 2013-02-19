@@ -2,6 +2,8 @@ package entity
 
 import "container/list"
 
+// Manager is a type that tracks and creates all existing entities and allows access
+// to them by id, tag and group.
 type Manager struct {
 	entities list.List
 	nextId   int
@@ -10,7 +12,7 @@ type Manager struct {
 	groups   map[string]map[*Entity]bool
 }
 
-// NewManager returns an initialised manager.
+// NewManager returns an initialised entity manager.
 func NewManager() *Manager {
 	m := new(Manager)
 	m.ids = make(map[int]*Entity)
