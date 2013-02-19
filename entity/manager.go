@@ -20,39 +20,52 @@ func NewManager() *Manager {
 }
 
 // All returns a slice of all active entities.
-func (m *EntityManager) All() []*Entity {
+func (m *Manager) All() []*Entity {
 	entities := make([]*Entity, 0, m.entities.Len())
 	for e := m.entities.Front(); e != nil; e = e.Next() {
-		append(entities, e.Value)
+		if ent, ok := e.Value.(*Entity); ok {
+			entities = append(entities, ent)
+		}
 	}
 	return entities
 }
 
 // Get returns the unique entity with the given id.
-func (m *EntityManager) Get(id int) *Entity {
+func (m *Manager) Get(id int) *Entity {
 	return m.ids[id]
 }
 
 // Tag returns the unique entity with the given tag.
-func (m *EntityManager) Tag(id string) *Entity {
+func (m *Manager) Tag(id string) *Entity {
 	return m.tags[id]
 }
 
 // Group returns a slice of all entities in the named group.
-func (m *EntityManager) Group(id string) []*Entity {
+func (m *Manager) Group(id string) []*Entity {
 	g := make([]*Entity, 0, 10)
 	group := m.groups[id]
 	for e := range group {
-		append(g, e)
+		g = append(g, e)
 	}
 	return g
 }
 
+// InGroup returns true if the given entity is in the named group and false otherwise.
+func (m *Manager) InGroup(entity *Entity, id string) bool {
+	g, ok := m.groups[id]
+	in := false
+	if ok {
+		_, in = g[entity]
+	}
+	return in
+}
+
 // New creates a new entity, assigning it to the next available id and
 // returning the created entity.
-func (m *EntityManager) New() *Entity {
+func (m *Manager) New() *Entity {
 	e := new(Entity)
 	e.id = m.nextId
+	e.Components = make(map[string]interface{})
 	m.nextId++
 	m.entities.PushBack(e)
 	m.ids[e.id] = e
@@ -60,9 +73,10 @@ func (m *EntityManager) New() *Entity {
 }
 
 // Delete removes the given entity from the manager.
-func (m *EntityManager) Delete(entity *Entity) {
-	for e := m.entities.Front(); e != nil; e = e.Next() {
-		if e.value == entity {
+func (m *Manager) Delete(entity *Entity) {
+	e := m.entities.Front()
+	for ; e != nil; e = e.Next() {
+		if e.Value == entity {
 			break
 		}
 	}
@@ -81,12 +95,12 @@ func (m *EntityManager) Delete(entity *Entity) {
 }
 
 // SetTag sets the given tag to refer to the given entity.
-func (m *EntityManager) SetTag(entity *Entity, tag string) {
+func (m *Manager) SetTag(entity *Entity, tag string) {
 	m.tags[tag] = entity
 }
 
 // SetGroup adds the given entity to the given group(s).
-func (m *EntityManager) SetGroup(entity *Entity, groups ...string) {
+func (m *Manager) SetGroup(entity *Entity, groups ...string) {
 	for _, g := range groups {
 		group, ok := m.groups[g]
 		if !ok {
@@ -98,12 +112,12 @@ func (m *EntityManager) SetGroup(entity *Entity, groups ...string) {
 }
 
 // ClearTag removes the given tag.
-func (m *EntityManager) ClearTag(tag string) {
+func (m *Manager) ClearTag(tag string) {
 	delete(m.tags, tag)
 }
 
 // ClearGroup removes the given entity from the given group(s).
-func (m *EntityManager) ClearGroup(entity *Entity, groups ...string) {
+func (m *Manager) ClearGroup(entity *Entity, groups ...string) {
 	for _, g := range groups {
 		group, ok := m.groups[g]
 		if ok {

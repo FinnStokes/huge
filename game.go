@@ -1,10 +1,15 @@
-package gauge
+package huge
+
+import (
+	"./entity"
+)
 
 type Game struct {
-	Entities EntityManager
+	Entities *entity.Manager
 }
 
 func NewGame() *Game {
-	em := NewEntityManager()
-	return &Game{em}
+	g := new(Game)
+	g.Entities = entity.NewManager()
+	return g
 }
