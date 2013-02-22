@@ -1,4 +1,4 @@
-// Package system implements management of individual systems that operate periodically on entities.
+// Package system manages individual systems that operate periodically on entities.
 package system
 
 import (
