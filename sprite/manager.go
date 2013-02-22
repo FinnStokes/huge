@@ -2,7 +2,6 @@ package sprite
 
 import (
 	"image"
-	"log"
 	"time"
 
 	"github.com/FinnStokes/huge/entity"
@@ -111,10 +110,6 @@ func loadImageAsTexture(img image.Image) gl.Texture {
 			data[x+y*w].a = uint16(a)
 		}
 	}
-	log.Println(img.At(0, 0).RGBA())
-	log.Println(img.At(32, 16).RGBA())
-	log.Println(img.At(32, 32).RGBA())
-	log.Println(img.At(63, 63).RGBA())
 	gl.TexImage2D(
 		gl.TEXTURE_2D,     // target
 		0,                 // level, 0 = base, no mipmap,
