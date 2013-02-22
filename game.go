@@ -26,7 +26,7 @@ func NewGame() *Game {
 	g.Systems = system.NewManager()
 	g.ticker[system.Slow] = time.NewTicker(time.Second)
 	g.ticker[system.Normal] = time.NewTicker(20 * time.Millisecond)
-	g.ticker[system.Fast] = time.NewTicker(time.Millisecond)
+	g.ticker[system.Fast] = time.NewTicker(10 * time.Millisecond)
 	return g
 }
 
@@ -41,7 +41,7 @@ func (g *Game) Run() {
 
 	defer glfw.Terminate()
 
-	if err = glfw.OpenWindow(640, 480, 8, 8, 8, 8, 0, 0, glfw.Windowed); err != nil {
+	if err = glfw.OpenWindow(640, 480, 16, 16, 16, 16, 0, 0, glfw.Windowed); err != nil {
 		log.Fatalf("%v\n", err)
 		return
 	}
@@ -65,6 +65,8 @@ func (g *Game) Run() {
 				g.Systems.Update(system.Normal, t.Sub(g.oldTime[system.Normal]), g.Entities)
 			}
 			g.oldTime[system.Normal] = t
+			gl.ClearColor(1, 1, 1, 1)
+			gl.Clear(gl.COLOR_BUFFER_BIT)
 			g.Systems.Draw(g.Entities)
 			glfw.SwapBuffers()
 		case t := <-g.ticker[system.Fast].C:
@@ -77,15 +79,10 @@ func (g *Game) Run() {
 }
 
 func onResize(w, h int) {
-	// Write to both buffers, prevent flickering
-	gl.DrawBuffer(gl.FRONT_AND_BACK)
-
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
 	gl.Viewport(0, 0, w, h)
 	gl.Ortho(0, float64(w), float64(h), 0, -1.0, 1.0)
-	gl.ClearColor(1, 1, 1, 0)
-	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 }
