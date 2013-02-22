@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"../entity"
+	"github.com/FinnStokes/huge/entity"
 
 	"github.com/go-gl/gl"
 )

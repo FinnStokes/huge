@@ -3,7 +3,7 @@ package system
 import (
 	"time"
 
-	"../entity"
+	"github.com/FinnStokes/huge/entity"
 )
 
 // Manager tracks all active systems and their update rates.

@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"./entity"
-	"./sprite"
-	"./system"
+	"github.com/FinnStokes/huge/entity"
+	"github.com/FinnStokes/huge/sprite"
+	"github.com/FinnStokes/huge/system"
 )
 
 func TestInit(t *testing.T) {

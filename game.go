@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
-	"./entity"
-	"./system"
+	"github.com/FinnStokes/huge/entity"
+	"github.com/FinnStokes/huge/system"
 
 	"github.com/go-gl/gl"
 	"github.com/go-gl/glfw"

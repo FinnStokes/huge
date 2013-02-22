@@ -4,7 +4,7 @@ package system
 import (
 	"time"
 
-	"../entity"
+	"github.com/FinnStokes/huge/entity"
 )
 
 // System is an interface that must be satisfied by any system that is added to the system manager.
