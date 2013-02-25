@@ -54,8 +54,8 @@ func (m *Manager) Draw(c *camera.Camera, entities *entity.Manager) {
 			if sprite, ok := e.Components["sprite"].(*Sprite); ok {
 				if c.World.Intersects(&camera.Rectangle{
 					pos.X, pos.Y,
-					float32(sprite.Width) * c.World.Width / float32(c.Screen.Width),
-					float32(sprite.Height) * c.World.Height / float32(c.Screen.Height),
+					float32(sprite.Width),
+					float32(sprite.Height),
 				}) {
 					tex, ok := m.textures[sprite.Image]
 					if !ok {
@@ -72,8 +72,8 @@ func (m *Manager) Draw(c *camera.Camera, entities *entity.Manager) {
 
 					x := int((pos.X - c.World.X) * float32(c.Screen.Width) / c.World.Width)
 					y := int((pos.Y - c.World.Y) * float32(c.Screen.Height) / c.World.Height)
-					w := sprite.Width
-					h := sprite.Height
+					w := int(float32(sprite.Width*c.Screen.Width) / c.World.Width)
+					h := int(float32(sprite.Height*c.Screen.Height) / c.World.Height)
 
 					tex.Bind(gl.TEXTURE_2D)
 					gl.Begin(gl.QUADS)
