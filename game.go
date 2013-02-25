@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/FinnStokes/huge/entity"
+	"github.com/FinnStokes/huge/resource"
 	"github.com/FinnStokes/huge/system"
 
 	"github.com/go-gl/gl"
@@ -12,17 +13,19 @@ import (
 )
 
 type Game struct {
-	Entities *entity.Manager
-	Systems  *system.Manager
-	ticker   [system.NumSpeeds]*time.Ticker
-	oldTime  [system.NumSpeeds]time.Time
-	running  bool
-	quitting bool
+	Entities  *entity.Manager
+	Resources *resource.Manager
+	Systems   *system.Manager
+	ticker    [system.NumSpeeds]*time.Ticker
+	oldTime   [system.NumSpeeds]time.Time
+	running   bool
+	quitting  bool
 }
 
 func NewGame() *Game {
 	g := new(Game)
 	g.Entities = entity.NewManager()
+	g.Resources = resource.NewManager()
 	g.Systems = system.NewManager()
 	g.ticker[system.Slow] = time.NewTicker(time.Second)
 	g.ticker[system.Normal] = time.NewTicker(20 * time.Millisecond)
