@@ -2,15 +2,21 @@
 package resource
 
 import (
+	"encoding/json"
 	"image"
 	_ "image/png"
+	"os"
+
+	"github.com/FinnStokes/huge/sprite"
 )
 
 // Manager is a type that stores the loaded resources and allows access with automatic loading.
 type Manager struct {
-	music  map[string]*Sound
-	sounds map[string]*Sound
-	images map[string]image.Image
+	music   map[string]*Sound
+	sounds  map[string]*Sound
+	images  map[string]image.Image
+	json    map[string]*os.File
+	sprites map[string]*spriteSpec
 }
 
 // NewManager returns an initialised resource manager.
@@ -19,6 +25,8 @@ func NewManager() *Manager {
 	m.music = make(map[string]*Sound)
 	m.sounds = make(map[string]*Sound)
 	m.images = make(map[string]image.Image)
+	m.json = make(map[string]*os.File)
+	m.sprites = make(map[string]*spriteSpec)
 	return m
 }
 
@@ -64,4 +72,36 @@ func (m *Manager) GetImage(name string) (img image.Image, err error) {
 		m.images[name] = img
 	}
 	return img, nil
+}
+
+// GetJson fetches a json file and loads it into the given struct
+func (m *Manager) GetJson(name string, target interface{}) (err error) {
+	file, ok := m.json[name]
+	if !ok {
+		file, err = os.Open(name + ".json")
+		if err != nil {
+			return err
+		}
+		m.json[name] = file
+	}
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(target)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetSprite creates a sprite based on the specification in a .json file
+func (m *Manager) GetSprite(name string) (s *sprite.Sprite, err error) {
+	sprite, ok := m.sprites[name]
+	if !ok {
+		sprite = new(spriteSpec)
+		err = m.GetJson(name, sprite)
+		if err != nil {
+			return nil, err
+		}
+		m.sprites[name] = sprite
+	}
+	return sprite.New(m)
 }
