@@ -1,0 +1,18 @@
+{
+    "image" : "sprite",
+    "width" : 64,
+    "height" : 64,
+    "animations" : {
+        "idle" : {
+            "frames" : [0,0,0,0,0,0,0,0],
+            "fps" : 4,
+            "next" : "bounce"
+        },
+        "bounce" : {
+            "frames" : [0,1,2,3],
+            "fps" : 4,
+            "next" : "idle"
+        }
+    },
+    "playing" : "bounce"
+}
