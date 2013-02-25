@@ -15,5 +15,5 @@ func (e *Entity) Id() int {
 
 // Position is a type used as a component for storing a position in 2d coordinates
 type Position struct {
-	X, Y int
+	X, Y float32
 }

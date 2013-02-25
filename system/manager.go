@@ -3,6 +3,7 @@ package system
 import (
 	"time"
 
+	"github.com/FinnStokes/huge/camera"
 	"github.com/FinnStokes/huge/entity"
 )
 
@@ -35,8 +36,8 @@ func (m *Manager) Update(speed Speed, dt time.Duration, entities *entity.Manager
 }
 
 // Draw calls the Draw method on all of the active systems.
-func (m *Manager) Draw(entities *entity.Manager) {
+func (m *Manager) Draw(c *camera.Camera, entities *entity.Manager) {
 	for _, s := range m.systems {
-		s.Draw(entities)
+		s.Draw(c, entities)
 	}
 }

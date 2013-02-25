@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/FinnStokes/huge/camera"
 	"github.com/FinnStokes/huge/entity"
 	"github.com/FinnStokes/huge/resource"
 	"github.com/FinnStokes/huge/system"
@@ -13,6 +14,7 @@ import (
 )
 
 type Game struct {
+	Camera    *camera.Camera
 	Entities  *entity.Manager
 	Resources *resource.Manager
 	Systems   *system.Manager
@@ -24,6 +26,7 @@ type Game struct {
 
 func NewGame() *Game {
 	g := new(Game)
+	g.Camera = new(camera.Camera)
 	g.Entities = entity.NewManager()
 	g.Resources = resource.NewManager()
 	g.Systems = system.NewManager()
@@ -51,9 +54,13 @@ func (g *Game) Run() {
 
 	defer glfw.CloseWindow()
 
+	g.Camera.Screen.Width, g.Camera.Screen.Height = 640, 480
+	g.Camera.World.X, g.Camera.World.Y = 0, 0
+	g.Camera.World.Width, g.Camera.World.Height = 640, 480
+
 	glfw.SetWindowTitle("Draw")
 	glfw.SetSwapInterval(1)
-	glfw.SetWindowSizeCallback(onResize)
+	glfw.SetWindowSizeCallback(func(w, h int) { g.onResize(w, h) })
 
 	g.running = true
 	for !g.quitting && glfw.WindowParam(glfw.Opened) == 1 {
@@ -70,7 +77,7 @@ func (g *Game) Run() {
 			g.oldTime[system.Normal] = t
 			gl.ClearColor(1, 1, 1, 1)
 			gl.Clear(gl.COLOR_BUFFER_BIT)
-			g.Systems.Draw(g.Entities)
+			g.Systems.Draw(g.Camera, g.Entities)
 			glfw.SwapBuffers()
 		case t := <-g.ticker[system.Fast].C:
 			if !g.oldTime[system.Fast].IsZero() {
@@ -81,13 +88,15 @@ func (g *Game) Run() {
 	}
 }
 
-func onResize(w, h int) {
+func (g *Game) onResize(w, h int) {
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
 	gl.Viewport(0, 0, w, h)
 	gl.Ortho(0, float64(w), float64(h), 0, -1.0, 1.0)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
+	g.Camera.Screen.Width, g.Camera.Screen.Height = w, h
+	g.Camera.World.Width, g.Camera.World.Height = float32(w), float32(h)
 }
 
 func (g *Game) terminate() {

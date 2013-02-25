@@ -4,6 +4,7 @@ import (
 	"image"
 	"time"
 
+	"github.com/FinnStokes/huge/camera"
 	"github.com/FinnStokes/huge/entity"
 
 	"github.com/go-gl/gl"
@@ -41,49 +42,57 @@ func (m *Manager) Update(dt time.Duration, entities *entity.Manager) {
 
 // Draw draws the current frame of all entities with sprite components at the position given by the
 // pos component.
-func (m *Manager) Draw(entities *entity.Manager) {
+func (m *Manager) Draw(c *camera.Camera, entities *entity.Manager) {
 	gl.Enable(gl.BLEND)
 	gl.Disable(gl.LIGHTING)
 	gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.REPLACE)
-	//gl.Enable(gl.POINT_SMOOTH)
-	//gl.Enable(gl.LINE_SMOOTH)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	gl.Color4f(1.0, 1.0, 1.0, 1.0)
 	gl.Enable(gl.TEXTURE_2D)
-	//gl.ShadeModel(gl.SMOOTH)
 	for _, e := range entities.All() {
 		if pos, ok := e.Components["pos"].(*entity.Position); ok {
 			if sprite, ok := e.Components["sprite"].(*Sprite); ok {
-				tex, ok := m.textures[sprite.Image]
-				if !ok {
-					tex = loadImageAsTexture(sprite.Image)
-					m.textures[sprite.Image] = tex
+				if c.World.Intersects(&camera.Rectangle{
+					pos.X, pos.Y,
+					float32(sprite.Width) * c.World.Width / float32(c.Screen.Width),
+					float32(sprite.Height) * c.World.Height / float32(c.Screen.Height),
+				}) {
+					tex, ok := m.textures[sprite.Image]
+					if !ok {
+						tex = loadImageAsTexture(sprite.Image)
+						m.textures[sprite.Image] = tex
+					}
+
+					tw := float32(sprite.Width) / float32(sprite.Image.Bounds().Dx())
+					th := float32(sprite.Height) / float32(sprite.Image.Bounds().Dy())
+					n := int(1.0 / tw)
+					f := sprite.CurrentAnimation.Frames[sprite.CurrentFrame]
+					tx := tw * float32(f%n)
+					ty := th * float32(f/n)
+
+					x := int((pos.X - c.World.X) * float32(c.Screen.Width) / c.World.Width)
+					y := int((pos.Y - c.World.Y) * float32(c.Screen.Height) / c.World.Height)
+					w := sprite.Width
+					h := sprite.Height
+
+					tex.Bind(gl.TEXTURE_2D)
+					gl.Begin(gl.QUADS)
+
+					gl.TexCoord2f(tx, ty)
+					gl.Vertex2i(x, y)
+
+					gl.TexCoord2f(tx+tw, ty)
+					gl.Vertex2i(x+w, y)
+
+					gl.TexCoord2f(tx+tw, ty+th)
+					gl.Vertex2i(x+w, y+h)
+
+					gl.TexCoord2f(tx, ty+th)
+					gl.Vertex2i(x, y+h)
+
+					gl.End()
+					tex.Unbind(gl.TEXTURE_2D)
 				}
-
-				w := float32(sprite.Width) / float32(sprite.Image.Bounds().Dx())
-				h := float32(sprite.Height) / float32(sprite.Image.Bounds().Dy())
-				n := int(1.0 / w)
-				f := sprite.CurrentAnimation.Frames[sprite.CurrentFrame]
-				x := w * float32(f%n)
-				y := h * float32(f/n)
-
-				tex.Bind(gl.TEXTURE_2D)
-				gl.Begin(gl.QUADS)
-
-				gl.TexCoord2f(x, y)
-				gl.Vertex2i(pos.X, pos.Y)
-
-				gl.TexCoord2f(x+w, y)
-				gl.Vertex2i(pos.X+sprite.Width, pos.Y)
-
-				gl.TexCoord2f(x+w, y+h)
-				gl.Vertex2i(pos.X+sprite.Width, pos.Y+sprite.Height)
-
-				gl.TexCoord2f(x, y+h)
-				gl.Vertex2i(pos.X, pos.Y+sprite.Height)
-
-				gl.End()
-				tex.Unbind(gl.TEXTURE_2D)
 			}
 		}
 	}
